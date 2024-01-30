@@ -14,9 +14,6 @@ workflows:
           checkout: true
           context: terraform
           persist-workspace: true
-          run:
-            name: Plan
-            command: terraform plan -chdir=/.circleci/config.yml
 
       - terraform/apply:
           attach-workspace: true
@@ -25,4 +22,6 @@ workflows:
             branches:
               only: master
           requires:
-            - terraform/plan
+            - terraform/plan:
+                name: Plan
+                command: terraform plan -chdir=/.circleci/config.yml
