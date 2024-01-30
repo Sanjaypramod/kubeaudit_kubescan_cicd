@@ -1,5 +1,5 @@
 cluster_name = "sanjaycluster"
-key_pair = "eks"
+key_pair = "key1"
 instance_types = ["t3.medium"]
 node_group_name = "sanjay-cluster-node-group"
 public_access_cidrs = ["0.0.0.0/0"]
