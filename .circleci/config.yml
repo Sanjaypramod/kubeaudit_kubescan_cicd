@@ -15,13 +15,12 @@ workflows:
           context: terraform
           persist-workspace: true
 
-      - terraform/apply:
+      - name: Apply
+        job: terraform/apply:
           attach-workspace: true
           context: terraform
           filters:
             branches:
               only: master
           requires:
-            - terraform/plan:
-                name: Plan
-                command: terraform plan -chdir=/.circleci/config.yml
+            - terraform/plan
