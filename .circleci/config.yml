@@ -1,32 +1,18 @@
-version: '2.1'
-
-orbs:
-  terraform: circleci/terraform@3.2.1
-
 workflows:
   deploy_infra:
     jobs:
       - terraform/validate:
-          checkout: true
-          context: terraform
-
+          # ...
+          
       - terraform/plan:
-          checkout: true
-          context: terraform
-          persist-workspace: true
-
+          # ...
+          
       - approve:
-          type: approval
-          name: Approval
-          message: "Please review the Terraform plan and approve if everything looks good."
+          # ...
           requires:
             - terraform/plan
 
       - terraform/apply:
-          attach-workspace: true
-          context: terraform
-          filters:
-            branches:
-              only: master
+          # ...
           requires:
             - approve
