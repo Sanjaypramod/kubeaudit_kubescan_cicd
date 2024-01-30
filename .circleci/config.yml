@@ -1,18 +1,32 @@
+version: '2.1'
+
+orbs:
+  terraform: circleci/terraform@3.2.1
+
 workflows:
   deploy_infra:
     jobs:
       - terraform/validate:
-          # ...
-          
+          checkout: true
+          context: terraform
+
       - terraform/plan:
-          # ...
-          
-      - approve:
-          # ...
+          checkout: true
+          context: terraform
+          persist-workspace: true
+
+      - manual_approval:
+          type: approval
+          name: Approval
           requires:
             - terraform/plan
 
       - terraform/apply:
-          # ...
+          attach-workspace: true
+          context: terraform
+          filters:
+            branches:
+              only: master
           requires:
-            - approve
+            - manual_approval
+            - terraform/plan
