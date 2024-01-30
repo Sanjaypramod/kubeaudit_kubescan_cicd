@@ -15,6 +15,13 @@ workflows:
           context: terraform
           persist-workspace: true
 
+      - approve:
+          type: approval
+          name: Approval
+          message: "Please review the Terraform plan and approve if everything looks good."
+          requires:
+            - terraform/plan
+
       - terraform/apply:
           attach-workspace: true
           context: terraform
@@ -22,4 +29,6 @@ workflows:
             branches:
               only: master
           requires:
+            - approve
             - terraform/plan
+
