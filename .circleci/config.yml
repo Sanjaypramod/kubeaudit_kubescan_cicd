@@ -1,26 +1,27 @@
-version: '2.1'
-
+version: 2.1
 orbs:
-  terraform: circleci/terraform@3.2.1
-
+  terraform: "circleci/terraform@1.1.0"
 workflows:
-  deploy_infra:
+  deploy_infrastructure:
     jobs:
+      - terraform/fmt:
+          checkout: true
+          context: terraform
       - terraform/validate:
           checkout: true
           context: terraform
-
+          requires:
+            - terraform/fmt
       - terraform/plan:
           checkout: true
           context: terraform
           persist-workspace: true
-
-      - manual_approval:
+          requires:
+            - terraform/validate
+      - hold-apply:
           type: approval
-          name: Approval
           requires:
             - terraform/plan
-
       - terraform/apply:
           attach-workspace: true
           context: terraform
@@ -28,5 +29,4 @@ workflows:
             branches:
               only: master
           requires:
-            - manual_approval
-            - terraform/plan
+            - hold-apply
