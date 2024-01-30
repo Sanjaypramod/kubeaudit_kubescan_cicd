@@ -15,12 +15,11 @@ workflows:
           context: terraform
           persist-workspace: true
 
-      - name: Apply
-        job: terraform/apply
-        attach-workspace: true
-        context: terraform
-        filters:
-          branches:
-            only: master
-        requires:
-          - terraform/plan
+      - terraform/apply:
+          attach-workspace: true
+          context: terraform
+          filters:
+            branches:
+              only: master
+          requires:
+            - terraform/plan
