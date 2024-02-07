@@ -1,5 +1,5 @@
 cluster_name = "sanjaycluster"
-key_pair = "key1"
+key_pair = "poc"
 instance_types = ["t3.medium"]
 node_group_name = "sanjay-cluster-node-group"
 public_access_cidrs = ["0.0.0.0/0"]
@@ -14,5 +14,6 @@ scaling_desired_size = "3"
 scaling_max_size = "3"
 scaling_min_size = "3"
 map_public_ip_on_launch = "true"
-key_name = "key1"
-ami_id = "ami-05fb0b8c1424f266b"
+key_name = "poc"
+ami_id = "ami-03f4878755434977f
+"
