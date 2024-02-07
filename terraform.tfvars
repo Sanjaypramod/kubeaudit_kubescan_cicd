@@ -15,5 +15,4 @@ scaling_max_size = "3"
 scaling_min_size = "3"
 map_public_ip_on_launch = "true"
 key_name = "poc"
-ami_id = "ami-03f4878755434977f
-"
+ami_id = "ami-03f4878755434977f"
