@@ -20,7 +20,7 @@ workflows:
           requires:
             - terraform/plan
 
-      - terraform/apply:
+      - terraform/destroy:
           attach-workspace: true
           context: terraform
           filters:
