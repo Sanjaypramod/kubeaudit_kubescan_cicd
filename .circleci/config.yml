@@ -3,22 +3,16 @@ version: '2.1'
 orbs:
   terraform: circleci/terraform@3.2.1
 
-# workflows:
-#   deploy_infra:
-#     jobs:
-      # - terraform/validate:
-      #     checkout: true
-      #     context: terraform
-
-      # - terraform/plan:
-      #     checkout: true
-      #     context: terraform
-      #     persist-workspace: true
+workflows:
+  deploy_infra:
+    jobs:
+      - terraform/init:
+          context: terraform
 
       - hold-apply:
           type: approval
           requires:
-            - terraform/plan
+            - terraform/init
 
       - terraform/destroy:
           attach-workspace: true
