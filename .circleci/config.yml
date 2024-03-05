@@ -4,57 +4,53 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
-  kube_audit:
+  test:
     docker:
       - image: cimg/go:1.17.0
     steps:
       - checkout
-      - run: 
+      - run:
           name: Install kubectl
           command: |
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
-      - run: 
+      - run:
+          name: Install kind
+          command: |
+            GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
+      - run:
+          name: Go mod download and go tidy
+          command: make setup
+      - run:
+          name: Run tests
+          environment:
+            USE_KIND: "true"
+          command: make test
+
+  kube_audit:
+    docker:
+      - image: cimg/go:1.17.0
+    steps:
+      - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - run:
           name: Install kind
           command: |
             GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
       - run:
           name: Setup KubeAudit
           command: |
-            # Here, you would add commands necessary for setting up kubeaudit,
-            # for instance, configuring it or setting up a Kubernetes cluster with kind.
-            # This is a placeholder for those commands.
-      - run: 
+            # Placeholder for KubeAudit setup commands.
+      - run:
           name: Run KubeAudit
           command: |
-            # Assuming kubeaudit is already set up in your project, replace the following command with actual kubeaudit commands.
-            # For example: kubeaudit all
             echo "Running kubeaudit checks..."
-
-  test:
-    docker:
-      - image: cimg/go:1.17.0
-    steps:
-      - checkout
-      - run: 
-          name: Install kubectl
-          command: |
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-      - run: 
-          name: Install kind
-          command: |
-            GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
-      - run: 
-          name: Go mod download and go tidy
-          command: make setup
-      - run: 
-          name: Run tests
-          environment:
-            USE_KIND: "true"
-          command: make test
 
 workflows:
   version: 2
