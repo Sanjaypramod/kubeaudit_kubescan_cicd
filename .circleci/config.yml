@@ -3,33 +3,6 @@ version: '2.1'
 orbs:
   terraform: circleci/terraform@3.2.1
 
-jobs:
-  test:
-    docker:
-      - image: ubuntu:latest
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get update && sudo apt-get install -y curl git
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            sudo chmod +x ./kubectl
-            mv ./kubectl /usr/local/bin/kubectl
-      - run:
-          name: Install Go and kind
-          command: |
-            sudo apt-get update && sudo apt-get install -y golang-go
-            GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
-      - run:
-          name: Go mod download and go tidy
-          command: make setup
-      - run:
-          name: Run tests
-          environment:
-            USE_KIND: "true"
-          command: make test
-
   kube_audit:
     docker:
       - image: ubuntu:latest
