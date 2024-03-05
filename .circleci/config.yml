@@ -3,6 +3,7 @@ version: '2.1'
 orbs:
   terraform: circleci/terraform@3.2.1
 
+jobs:
   kube_audit:
     docker:
       - image: ubuntu:latest
@@ -32,6 +33,13 @@ orbs:
           command: |
             kubeaudit version
             # Add more kubeaudit commands as needed
+
+  test:
+    docker:
+      - image: ubuntu:latest
+    steps:
+      - checkout
+      # Add the steps for the 'test' job here, similar to the 'kube_audit' job.
 
 workflows:
   version: 2
