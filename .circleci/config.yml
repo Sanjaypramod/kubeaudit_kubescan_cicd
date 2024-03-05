@@ -3,23 +3,62 @@ version: '2.1'
 orbs:
   terraform: circleci/terraform@3.2.1
 
+jobs:
+  # Your kube_audit job definition here as you provided
+  kube_audit:
+    docker:
+      - image: alpine:latest
+    steps:
+      - checkout
+      - run:
+          name: Install KubeAudit
+          command: |
+            apk update && apk add --no-cache curl
+            curl -L "https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_$(uname -s)_$(uname -m).tar.gz" | tar -xz
+            mv kubeaudit /usr/local/bin/
+      - run:
+          name: Run KubeAudit and check for failure
+          command: |
+            kubeaudit all > kubeaudit_output.txt 2>&1
+            KUBEAUDIT_EXIT_CODE=$?
+            
+            if [ $KUBEAUDIT_EXIT_CODE -ne 0 ]; then
+              echo "Sending failure notification email..."
+              curl -X POST -H "Authorization: Bearer $EMAIL_SERVICE_API_KEY" \
+                   -H "Content-Type: application/json" \
+                   -d '{
+                         "personalizations": [{"to": [{"email": "'$KUBE_AUDIT_NOTIFICATION_EMAIL'"}]}],
+                         "from": {"email": "your_from_email@example.com"},
+                         "subject": "KubeAudit Failure Notification",
+                         "content": [{"type": "text/plain", "value": "KubeAudit encountered errors. Please check the CircleCI logs for more details."}]
+                       }' \
+                   $EMAIL_SERVICE_API_URL
+            fi
+            
+            exit $KUBEAUDIT_EXIT_CODE
+
+  # Define other jobs as necessary, for example, terraform/validate, terraform/plan, etc.
+
 workflows:
+  version: 2
   deploy_infra:
     jobs:
       - terraform/validate:
           checkout: true
           context: terraform
-
       - terraform/plan:
           checkout: true
           context: terraform
           persist-workspace: true
-
+          requires:
+            - terraform/validate
+      - kube_audit:
+          requires:
+            - terraform/plan
       - hold-apply:
           type: approval
           requires:
-            - terraform/plan
-
+            - kube_audit
       - terraform/apply:
           attach-workspace: true
           context: terraform
