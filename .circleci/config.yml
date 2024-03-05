@@ -10,14 +10,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install kubectl
+          name: Install dependencies
           command: |
+            sudo apt-get update && sudo apt-get install -y curl git
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
       - run:
-          name: Install kind
+          name: Install Go and kind
           command: |
+            sudo apt-get update && sudo apt-get install -y golang-go
             GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
       - run:
           name: Go mod download and go tidy
@@ -34,14 +36,16 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install kubectl
+          name: Install dependencies
           command: |
+            sudo apt-get update && sudo apt-get install -y curl git
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
       - run:
-          name: Install kind
+          name: Install Go and kind
           command: |
+            sudo apt-get update && sudo apt-get install -y golang-go
             GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
       - run:
           name: Setup and Install KubeAudit
