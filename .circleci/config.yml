@@ -4,7 +4,6 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
-  # Your kube_audit job definition here as you provided
   kube_audit:
     docker:
       - image: alpine:latest
@@ -14,8 +13,14 @@ jobs:
           name: Install KubeAudit
           command: |
             apk update && apk add --no-cache curl
-            curl -L "https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_$(uname -s)_$(uname -m).tar.gz" | tar -xz
-            mv kubeaudit /usr/local/bin/
+            curl -L "https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_$(uname -s)_$(uname -m).tar.gz" -o kubeaudit.tar.gz
+            if [ $? -eq 0 ]; then
+              tar -xzvf kubeaudit.tar.gz
+              mv kubeaudit /usr/local/bin/
+            else
+              echo "Failed to download KubeAudit. Exiting..."
+              exit 1
+            fi
       - run:
           name: Run KubeAudit and check for failure
           command: |
@@ -28,7 +33,7 @@ jobs:
                    -H "Content-Type: application/json" \
                    -d '{
                          "personalizations": [{"to": [{"email": "'$KUBE_AUDIT_NOTIFICATION_EMAIL'"}]}],
-                         "from": {"email": "your_from_email@example.com"},
+                         "from": {"email": "sanjay.pramod@urolime.com"},
                          "subject": "KubeAudit Failure Notification",
                          "content": [{"type": "text/plain", "value": "KubeAudit encountered errors. Please check the CircleCI logs for more details."}]
                        }' \
@@ -36,8 +41,6 @@ jobs:
             fi
             
             exit $KUBEAUDIT_EXIT_CODE
-
-  # Define other jobs as necessary, for example, terraform/validate, terraform/plan, etc.
 
 workflows:
   version: 2
