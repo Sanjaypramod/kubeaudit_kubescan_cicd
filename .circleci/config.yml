@@ -17,13 +17,14 @@ jobs:
           name: Install KubeAudit
           command: |
             curl -L "https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_$(uname -s)_$(uname -m).tar.gz" -o kubeaudit.tar.gz
-            if [ $? -eq 0 ]; then
+            echo "Downloaded file contents:"
+            cat kubeaudit.tar.gz
+            if file kubeaudit.tar.gz | grep -q 'gzip compressed data'; then
               tar -xzvf kubeaudit.tar.gz
               mv kubeaudit /usr/local/bin/
             else
-              echo "Failed to download KubeAudit. Exiting..."
+              echo "The downloaded file is not a gzip archive. Exiting..."
               exit 1
-            fi
       - run:
           name: Run KubeAudit and check for failure
           command: |
