@@ -20,7 +20,7 @@ jobs:
           name: Install Go and kind
           command: |
             apt-get update && apt-get install -y golang-go
-            GO111MODULE="on" get sigs.k8s.io/kind@v0.11.1
+            GO111MODULE="on" sigs.k8s.io/kind@v0.11.1
       - run:
           name: Setup and Install KubeAudit
           command: |
