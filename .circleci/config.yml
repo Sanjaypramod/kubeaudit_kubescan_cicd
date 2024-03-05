@@ -25,6 +25,7 @@ jobs:
             else
               echo "The downloaded file is not a gzip archive. Exiting..."
               exit 1
+            fi
       - run:
           name: Run KubeAudit and check for failure
           command: |
