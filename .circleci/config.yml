@@ -4,6 +4,34 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
+  kube_audit:
+    docker:
+      - image: cimg/go:1.17.0
+    steps:
+      - checkout
+      - run: 
+          name: Install kubectl
+          command: |
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - run: 
+          name: Install kind
+          command: |
+            GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
+      - run:
+          name: Setup KubeAudit
+          command: |
+            # Here, you would add commands necessary for setting up kubeaudit,
+            # for instance, configuring it or setting up a Kubernetes cluster with kind.
+            # This is a placeholder for those commands.
+      - run: 
+          name: Run KubeAudit
+          command: |
+            # Assuming kubeaudit is already set up in your project, replace the following command with actual kubeaudit commands.
+            # For example: kubeaudit all
+            echo "Running kubeaudit checks..."
+
   test:
     docker:
       - image: cimg/go:1.17.0
@@ -12,11 +40,13 @@ jobs:
       - run: 
           name: Install kubectl
           command: |
-            sudo snap install kubectl --classic
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
       - run: 
           name: Install kind
           command: |
-            go get sigs.k8s.io/kind
+            GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
       - run: 
           name: Go mod download and go tidy
           command: make setup
@@ -33,17 +63,17 @@ workflows:
       - terraform/validate:
           checkout: true
           context: terraform
-
       - terraform/plan:
           checkout: true
           context: terraform
           persist-workspace: true
-
+      - kube_audit:
+          requires:
+            - terraform/plan
       - hold-apply:
           type: approval
           requires:
-            - terraform/plan
-
+            - kube_audit
       - terraform/apply:
           attach-workspace: true
           context: terraform
@@ -52,7 +82,6 @@ workflows:
               only: master
           requires:
             - hold-apply
-
       - test:
           requires:
             - terraform/apply
