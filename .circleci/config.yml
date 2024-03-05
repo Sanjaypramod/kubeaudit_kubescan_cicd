@@ -6,7 +6,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: cimg/go:1.17.0
+      - image: ubuntu:latest
     steps:
       - checkout
       - run:
@@ -30,7 +30,7 @@ jobs:
 
   kube_audit:
     docker:
-      - image: cimg/go:1.17.0
+      - image: ubuntu:latest
     steps:
       - checkout
       - run:
