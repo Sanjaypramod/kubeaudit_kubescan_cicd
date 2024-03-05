@@ -4,66 +4,46 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
-  kube_audit:
+  test:
     docker:
-      - image: ubuntu:latest
+      - image: cimg/go:1.17.0
     steps:
       - checkout
-      - run:
-          name: Update and Install Dependencies
+      - run: 
+          name: Install kubectl
           command: |
-            apt-get update && apt-get install -y curl tar file
-      - run:
-          name: Install KubeAudit
+            sudo snap install kubectl --classic
+      - run: 
+          name: Install kind
           command: |
-            curl -L "https://github.com/Shopify/kubeaudit/releases/latest/download/kubeaudit_$(uname -s)_$(uname -m).tar.gz" -o kubeaudit.tar.gz
-            echo "Downloaded file contents:"
-            cat kubeaudit.tar.gz
-            if [ "$(file kubeaudit.tar.gz | grep 'gzip compressed data')" != "" ]; then
-              tar -xzvf kubeaudit.tar.gz
-              mv kubeaudit /usr/local/bin/
-            else
-              echo "The downloaded file is not a gzip archive or was not found. Exiting..."
-              exit 1
-      - run:
-          name: Run KubeAudit and check for failure
-          command: |
-            kubeaudit all > kubeaudit_output.txt 2>&1
-            KUBEAUDIT_EXIT_CODE=$?
-            if [ $KUBEAUDIT_EXIT_CODE -ne 0 ]; then
-              echo "Sending failure notification email..."
-              curl -X POST -H "Authorization: Bearer $EMAIL_SERVICE_API_KEY" \
-                   -H "Content-Type: application/json" \
-                   -d '{
-                         "personalizations": [{"to": [{"email": "'$KUBE_AUDIT_NOTIFICATION_EMAIL'"}]}],
-                         "from": {"email": "sanjay.pramod@urolime.com"},
-                         "subject": "KubeAudit Failure Notification",
-                         "content": [{"type": "text/plain", "value": "KubeAudit encountered errors. Please check the CircleCI logs for more details."}]
-                       }' \
-                   $EMAIL_SERVICE_API_URL
-            fi
-            exit $KUBEAUDIT_EXIT_CODE
+            go get sigs.k8s.io/kind
+      - run: 
+          name: Go mod download and go tidy
+          command: make setup
+      - run: 
+          name: Run tests
+          environment:
+            USE_KIND: "true"
+          command: make test
 
 workflows:
   version: 2
-  deploy_infra:
+  deploy_infra_and_test:
     jobs:
       - terraform/validate:
           checkout: true
           context: terraform
+
       - terraform/plan:
           checkout: true
           context: terraform
           persist-workspace: true
-          requires:
-            - terraform/validate
-      - kube_audit:
-          requires:
-            - terraform/plan
+
       - hold-apply:
           type: approval
           requires:
-            - kube_audit
+            - terraform/plan
+
       - terraform/apply:
           attach-workspace: true
           context: terraform
@@ -72,3 +52,7 @@ workflows:
               only: master
           requires:
             - hold-apply
+
+      - test:
+          requires:
+            - terraform/apply
