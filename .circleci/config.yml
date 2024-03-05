@@ -44,13 +44,17 @@ jobs:
           command: |
             GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
       - run:
-          name: Setup KubeAudit
+          name: Setup and Install KubeAudit
           command: |
-            # Placeholder for KubeAudit setup commands.
+            curl -L "https://github.com/Shopify/kubeaudit/releases/download/v0.14.0/kubeaudit_0.14.0_linux_amd64.tar.gz" -o kubeaudit.tar.gz
+            tar -xzf kubeaudit.tar.gz
+            sudo mv kubeaudit /usr/local/bin/
+            sudo chmod +x /usr/local/bin/kubeaudit
       - run:
           name: Run KubeAudit
           command: |
-            echo "Running kubeaudit checks..."
+            kubeaudit version
+            # Add more kubeaudit commands as needed
 
 workflows:
   version: 2
