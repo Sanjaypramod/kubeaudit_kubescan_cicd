@@ -13,22 +13,22 @@ jobs:
           command: terraform init
       - run:
           name: Apply Terraform changes
-          command: terraform apply -auto-approve
-      - run:
-          name: Install AWS CLI
-          command: |
-            apk add --no-cache aws-cli
-      - run:
-          name: Retrieve and Store Audit Logs
-          command: |
-            # Retrieve audit logs (example command, adjust as needed)
-            aws eks describe-cluster --name sanjaycluster --region ap-south-1 --query 'cluster.logs.clusterLogging' > audit.log
+          command: terraform destroy -auto-approve
+      # - run:
+      #     name: Install AWS CLI
+      #     command: |
+      #       apk add --no-cache aws-cli
+      # - run:
+      #     name: Retrieve and Store Audit Logs
+      #     command: |
+      #       # Retrieve audit logs (example command, adjust as needed)
+      #       aws eks describe-cluster --name sanjaycluster --region ap-south-1 --query 'cluster.logs.clusterLogging' > audit.log
             
-            # Store audit logs in specified location (example command, adjust as needed)
-            aws s3 cp audit.log s3://sanjaypocbucket1
+      #       # Store audit logs in specified location (example command, adjust as needed)
+      #       aws s3 cp audit.log s3://sanjaypocbucket1
 
-workflows:
-  version: 2
-  build_and_deploy:
-    jobs:
-      - terraform_apply
+# workflows:
+  # version: 2
+  # build_and_deploy:
+  #   jobs:
+  #     - terraform_apply
