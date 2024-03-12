@@ -3,7 +3,7 @@ jobs:
   build:
     # Define your build job here
 
-  terraform_apply:
+  terraform_destroy:
     docker:
       - image: hashicorp/terraform:light
     steps:
@@ -12,7 +12,7 @@ jobs:
           # name: Initialize Terraform
           # command: terraform init
       - run:
-          name: destroy Terraform changes
+          name: Destroy Terraform resources
           command: terraform destroy -auto-approve
       # - run:
       #     name: Install AWS CLI
@@ -23,12 +23,11 @@ jobs:
       #     command: |
       #       # Retrieve audit logs (example command, adjust as needed)
       #       aws eks describe-cluster --name sanjaycluster --region ap-south-1 --query 'cluster.logs.clusterLogging' > audit.log
-            
       #       # Store audit logs in specified location (example command, adjust as needed)
       #       aws s3 cp audit.log s3://sanjaypocbucket1
 
 # workflows:
-  # version: 2
-  # build_and_deploy:
-  #   jobs:
-  #     - terraform_apply
+#   version: 2
+#   build_and_destroy:
+#     jobs:
+#       - terraform_destroy
