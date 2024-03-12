@@ -1,68 +1,21 @@
-version: '2.1'
-
-orbs:
-  terraform: circleci/terraform@3.2.1
-
+version: 2
 jobs:
-  kube_audit:
+  terraform_apply:
     docker:
-      - image: ubuntu:latest
+      - image: hashicorp/terraform:light
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            apt-get update && apt-get install -y curl git
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            chmod +x ./kubectl
-            mv ./kubectl /usr/local/bin/kubectl
-      
+          name: Initialize Terraform
+          command: terraform init
       - run:
-          name: Setup and Install KubeAudit
-          command: |
-            curl -L "https://github.com/Shopify/kubeaudit/releases/download/v0.14.0/kubeaudit_0.14.0_linux_amd64.tar.gz" -o kubeaudit.tar.gz
-            tar -xzf kubeaudit.tar.gz
-            mv kubeaudit /usr/local/bin/
-            chmod +x /usr/local/bin/kubeaudit
+          name: Apply Terraform changes
+          command: terraform apply -auto-approve
       - run:
-          name: Run KubeAudit
+          name: Retrieve and Store Audit Logs
           command: |
-            kubeaudit version
-            # Add more kubeaudit commands as needed
-
-  test:
-    docker:
-      - image: ubuntu:latest
-    steps:
-      - checkout
-      # Add the steps for the 'test' job here, similar to the 'kube_audit' job.
-
-workflows:
-  version: 2
-  deploy_infra_and_test:
-    jobs:
-      - terraform/validate:
-          checkout: true
-          context: terraform
-      - terraform/plan:
-          checkout: true
-          context: terraform
-          persist-workspace: true
-      - kube_audit:
-          requires:
-            - terraform/plan
-      - hold-apply:
-          type: approval
-          requires:
-            - kube_audit
-      - terraform/apply:
-          attach-workspace: true
-          context: terraform
-          filters:
-            branches:
-              only: master
-          requires:
-            - hold-apply
-      - test:
-          requires:
-            - terraform/apply
+            # Retrieve audit logs (example command, adjust as needed)
+            aws eks describe-cluster --name sanjaycluster --region ap-south-1 --query 'cluster.logs.clusterLogging' > audit.log
+            
+            # Store audit logs in specified location (example command, adjust as needed)
+            aws s3 cp audit.log s3://sanjaypocbucket1
