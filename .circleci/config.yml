@@ -15,6 +15,10 @@ jobs:
           name: Apply Terraform changes
           command: terraform apply -auto-approve
       - run:
+          name: Install AWS CLI
+          command: |
+            apt-get update && apt-get install -y awscli
+      - run:
           name: Retrieve and Store Audit Logs
           command: |
             # Retrieve audit logs (example command, adjust as needed)
