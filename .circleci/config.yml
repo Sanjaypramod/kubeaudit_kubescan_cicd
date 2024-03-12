@@ -15,10 +15,9 @@ jobs:
           name: Apply Terraform changes
           command: terraform apply -auto-approve
       - run:
-         name: Install AWS CLI
-         command: |
-         apk add --no-cache aws-cli
-
+          name: Install AWS CLI
+          command: |
+            apk add --no-cache aws-cli
       - run:
           name: Retrieve and Store Audit Logs
           command: |
