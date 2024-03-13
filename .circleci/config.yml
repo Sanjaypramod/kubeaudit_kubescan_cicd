@@ -1,33 +1,41 @@
-version: 2
+version: 2.1
 jobs:
   build:
-    # Define your build job here
-
-  terraform_destroy:
     docker:
-      - image: hashicorp/terraform:light
+      - image: cimg/base:current
+    resource_class: sanjaypramod/runner
     steps:
-      - checkout
-      # - run:
-          # name: Initialize Terraform
-          # command: terraform init
-      - run:
-          name: Destroy Terraform resources
-          command: terraform destroy -auto-approve
-      # - run:
-      #     name: Install AWS CLI
-      #     command: |
-      #       apk add --no-cache aws-cli
-      # - run:
-      #     name: Retrieve and Store Audit Logs
-      #     command: |
-      #       # Retrieve audit logs (example command, adjust as needed)
-      #       aws eks describe-cluster --name sanjaycluster --region ap-south-1 --query 'cluster.logs.clusterLogging' > audit.log
-      #       # Store audit logs in specified location (example command, adjust as needed)
-      #       aws s3 cp audit.log s3://sanjaypocbucket1
+      - run: echo "Hi I'm on a Container Runner!"
 
-# workflows:
-#   version: 2
-#   build_and_destroy:
-#     jobs:
-#       - terraform_destroy
+orbs:
+  terraform: circleci/terraform@3.2.1
+
+workflows:
+  build-workflow:
+    jobs:
+      - build
+
+  deploy_infra:
+    jobs:
+      - terraform/validate:
+          checkout: true
+          context: terraform
+
+      - terraform/plan:
+          checkout: true
+          context: terraform
+          persist-workspace: true
+
+      - hold-apply:
+          type: approval
+          requires:
+            - terraform/plan
+
+      - terraform/apply:
+          attach-workspace: true
+          context: terraform
+          filters:
+            branches:
+              only: master
+          requires:
+            - hold-apply
