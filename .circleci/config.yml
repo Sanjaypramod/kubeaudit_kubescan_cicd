@@ -1,5 +1,19 @@
 version: 2.1
+
 jobs:
+  install_kube_audit:
+    docker:
+      - image: cimg/base:current
+    resource_class: sanjaypramod/runner
+    steps:
+      # Install kube-audit
+      - run: |
+          wget https://github.com/Shopify/kubeaudit/releases/download/v0.15.0/kubeaudit_0.15.0_linux_amd64.tar.gz
+          tar -xzvf kubeaudit_0.15.0_linux_amd64.tar.gz
+          sudo mv kubeaudit /usr/local/bin/
+          kube-audit setup  # Example command to set up kube-audit
+        name: Install kube-audit
+
   build:
     docker:
       - image: cimg/base:current
@@ -7,35 +21,33 @@ jobs:
     steps:
       - run: echo "Hi I'm on a Container Runner!"
 
-orbs:
-  terraform: circleci/terraform@3.2.1
-
-workflows:
-  build-workflow:
-    jobs:
-      - build
-
   deploy_infra:
-    jobs:
+    docker:
+      - image: cimg/base:current
+    resource_class: sanjaypramod/runner
+    steps:
+      - checkout
       - terraform/validate:
-          checkout: true
           context: terraform
-
       - terraform/plan:
-          checkout: true
           context: terraform
           persist-workspace: true
-
       - hold-apply:
           type: approval
           requires:
             - terraform/plan
-
       - terraform/apply:
-          attach-workspace: true
           context: terraform
+          attach-workspace: true
           filters:
             branches:
               only: master
+
+workflows:
+  build-workflow:
+    jobs:
+      - install_kube_audit
+      - build
+      - deploy_infra:
           requires:
-            - hold-apply
+            - install_kube_audit
