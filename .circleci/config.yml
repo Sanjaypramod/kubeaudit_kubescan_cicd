@@ -6,13 +6,12 @@ jobs:
       - image: cimg/base:current
     resource_class: sanjaypramod/runner
     steps:
-      # Install kube-audit
-      - run: |
+      - name: Install kube-audit
+        run: |
           wget https://github.com/Shopify/kubeaudit/releases/download/v0.15.0/kubeaudit_0.15.0_linux_amd64.tar.gz
           tar -xzvf kubeaudit_0.15.0_linux_amd64.tar.gz
           sudo mv kubeaudit /usr/local/bin/
           kube-audit setup  # Example command to set up kube-audit
-        name: Install kube-audit
 
   build:
     docker:
